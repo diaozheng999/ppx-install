@@ -47,7 +47,7 @@
   "repository": "diaozheng999/ppx-install",
   "scripts": {
     "posttest": "eslint . --ext .ts",
-    "prepack": "rimraf lib && tsc -b && oclif-dev readme",
+    "__prepack": "rimraf lib && tsc -b && oclif-dev readme",
     "test": "echo NO TESTS",
     "version": "oclif-dev readme && git add README.md"
   },
