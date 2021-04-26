@@ -2,12 +2,11 @@ Dim fso
 Dim CurrentDirectory
 
 Set fso = CreateObject("Scripting.FileSystemObject")
-CurrentDirectory = fso.GetAbsolutePathName(".")
 fso.CreateTextFile "__ppx_elevated_prompt.lock", True
 
 CreateObject("Shell.Application").ShellExecute _
   "cmd", _
-  "/k node """ & WScript.Arguments.Item(0) & """ --elevated=""" & CurrentDirectory & """", _
+  "/k node """ & WScript.Arguments.Item(0) & """ " & WScript.Arguments.Item(1) & " --elevated=""" & WScript.Arguments.Item(2) & """", _
   "", _
   "runas", _
   1

@@ -11,10 +11,13 @@
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
-    "tslib": "^1.14.1"
+    "esy": "^0.6.10",
+    "md5": "^2.3.0",
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
+    "@types/md5": "^2.3.0",
     "@types/node": "^10.17.58",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
@@ -25,7 +28,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
-    "ts-node": "^8.10.2",
+    "ts-node": "^9.1.1",
     "typescript": "^4.2.4"
   },
   "engines": {
@@ -47,7 +50,7 @@
   "repository": "diaozheng999/ppx-install",
   "scripts": {
     "posttest": "eslint . --ext .ts",
-    "__prepack": "rimraf lib && tsc -b && oclif-dev readme",
+    "prepack": "rimraf lib && tsc -b && oclif-dev readme",
     "test": "echo NO TESTS",
     "version": "oclif-dev readme && git add README.md"
   },

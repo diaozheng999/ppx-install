@@ -1,6 +1,6 @@
 import { Command, flags } from "@oclif/command";
-import { EsyInstall } from "./esy-install";
-import { parse } from "./spec";
+import { PpxBuilderSingleton } from "./ppx-builder-singleton";
+import { PpxCachedRunner } from "./ppx-cached-runner";
 
 class PpxInstall extends Command {
   static description = "P";
@@ -13,14 +13,26 @@ class PpxInstall extends Command {
       description:
         "[Windows only] flags command to be run in Administrator command prompt",
     }),
+    install: flags.boolean({
+      description: "install the Esy project based on specifications",
+    }),
   };
 
+  static args = [{ name: "input" }, { name: "output" }];
+
   async run() {
-    const { flags } = this.parse(PpxInstall);
+    const { flags, args } = this.parse(PpxInstall);
 
-    parse();
-
-    new EsyInstall(flags.elevated).run(process.argv[1]);
+    if (flags.install) {
+      await new PpxBuilderSingleton(this, flags.elevated).run();
+    } else {
+      await new PpxCachedRunner(
+        this,
+        flags.elevated,
+        args.input,
+        args.output,
+      ).run();
+    }
   }
 }
 
