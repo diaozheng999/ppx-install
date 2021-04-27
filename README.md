@@ -4,8 +4,8 @@ ppx-install
 Install Esy/OPAM repositories into ReScript
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/ppx-install.svg)](https://npmjs.org/package/@nasi/ppx-install)
-[![Downloads/week](https://img.shields.io/npm/dw/ppx-install.svg)](https://npmjs.org/package/@nasi/ppx-install)
+[![Version](https://img.shields.io/npm/v/ppx-install.svg)](https://npmjs.org/package/ppx-install)
+[![Downloads/week](https://img.shields.io/npm/dw/ppx-install.svg)](https://npmjs.org/package/ppx-install)
 [![License](https://img.shields.io/npm/l/ppx-install.svg)](https://github.com/diaozheng999/ppx-install/blob/master/package.json)
 
 <!-- toc -->
