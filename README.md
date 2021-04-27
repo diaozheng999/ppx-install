@@ -76,7 +76,7 @@ use the `@opam` scope.
 
 The following is an example of how it's used:
 
-```json
+```javascript
 {
   "ppx": [
     ["@opam/ppx_jane", ">=v0.14.0"],  // used to specify a specific version
