@@ -1,4 +1,4 @@
-import { copyFileSync } from "fs";
+import { copyFileSync, existsSync, unlinkSync } from "fs";
 import { resolve } from "path";
 import { getPackageNames } from "./esy-internals";
 import { Platform } from "./platform";
@@ -7,6 +7,8 @@ import { parse } from "./spec";
 
 export class EsyInstall extends Platform {
   async main() {
+    const buildLockFile = resolve(this.cwd(), "__ppx_build.lock");
+
     const specs = parse(this);
     const ppxName = await generateProject(this, specs.name, specs.packages);
     this.dir(resolve(this.cwd(), "_ppx"), async () => {
@@ -19,8 +21,14 @@ export class EsyInstall extends Platform {
       this.log(": copying ppx.exe");
       copyFileSync(
         resolve(this.cwd(), "_ppx", "build", "lib", ppxName, "ppx.exe"),
-        resolve(this.cwd(), "_ppx", `_ppx_${specs.hash}.exe`),
+        resolve(this.cwd(), "_ppx", `ppx.exe`),
       );
+      this.log(": copied ppx.exe");
+      if (!existsSync(resolve(this.cwd(), "_ppx", `ppx.exe`))) {
+        this.fatal("Copied ppx.exe does not seem to exist in file system.");
+      } else if (existsSync(buildLockFile)) {
+        unlinkSync(buildLockFile);
+      }
     });
   }
 }

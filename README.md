@@ -108,8 +108,7 @@ and compile an optimised rewriter that changes the code in one pass.
 
 On executing without any flags (such as through `bsb -make-world`), we first
 check and hash the dependencies, and look into the `_ppx` folder for
-`_ppx_{md5(deps)}.exe`. If this is found, we simply execute this exe with the
-`-as-ppx` flag.
+`ppx.exe`. If this is found, we simply execute this exe with the `-as-ppx` flag.
 
 If the executable is not found, we will attempt to generate and build the
 project, and execute the rewriter again.
@@ -125,3 +124,7 @@ newer native targets such as Windows and Apple Silicon macs.
 
 So far, we've only been working with `Ppxlib` rewriters. Older rewriters may
 or may not work well. I haven't tested them yet.
+
+In attempt to speed up execution, the `md5` check is removed. Whenever PPX
+dependencies are updated, please run `ppx-install --build` to get the newest
+`ppx.exe`.

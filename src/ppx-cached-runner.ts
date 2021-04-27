@@ -36,8 +36,7 @@ export class PpxCachedRunner extends Platform {
   }
 
   async main() {
-    const specs = parse(this);
-    const cached = resolve(this.cwd(), "_ppx", `_ppx_${specs.hash}.exe`);
+    const cached = resolve(this.cwd(), "_ppx", `ppx.exe`);
 
     if (existsSync(cached)) {
       this.exec(`"${cached}" -as-ppx "${this.#input}" "${this.#output}"`);
@@ -45,6 +44,9 @@ export class PpxCachedRunner extends Platform {
     }
 
     await this.spawn(PpxBuilderSingleton).run();
+    // somehow waiting to the next tick will allow the file to exist on the
+    // file system
+    await new Promise((res) => setTimeout(res, 400));
     this.exec(`"${cached}" -as-ppx "${this.#input}" "${this.#output}"`);
   }
 }

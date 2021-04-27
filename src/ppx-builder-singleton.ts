@@ -1,5 +1,5 @@
 import Command from "@oclif/command";
-import { existsSync, unlinkSync, watch, writeFileSync } from "fs";
+import { existsSync, watch, writeFileSync } from "fs";
 import { resolve } from "path";
 import { EsyInstall } from "./esy-install";
 import { Platform } from "./platform";
@@ -17,12 +17,13 @@ export class PpxBuilderSingleton extends Platform {
 
   async main(): Promise<void> {
     if (existsSync(this.#buildLockFile) && !this.elevated()) {
-      this.log("waiting for ongoing build to finish.");
+      this.log(": waiting for ongoing build to finish.");
       return new Promise((res) => {
         const watcher = watch(this.cwd(), (event, filename) => {
           if (event === "rename" && filename === "__ppx_build.lock") {
             if (!existsSync(this.#buildLockFile)) {
               watcher.close();
+              this.log(": lockfile is removed. attempting execution");
               res();
             }
           }
@@ -31,16 +32,10 @@ export class PpxBuilderSingleton extends Platform {
     } else {
       writeFileSync(this.#buildLockFile, "\n");
       this.log("creating Esy project.");
-      try {
-        await this.spawn(EsyInstall).run({
-          shouldElevateInWindows: true,
-          arg1: "--build",
-        });
-      } finally {
-        if (existsSync(this.#buildLockFile)) {
-          unlinkSync(this.#buildLockFile);
-        }
-      }
+      await this.spawn(EsyInstall).run({
+        shouldElevateInWindows: true,
+        arg1: "--build",
+      });
     }
   }
 }
