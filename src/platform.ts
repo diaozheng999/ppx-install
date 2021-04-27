@@ -53,11 +53,11 @@ export class Platform {
   }
 
   log(message: string) {
-    this.#log(message);
+    this.#log("> ppx-install " + message);
   }
 
   error(message: string) {
-    this.#ctx.error(message);
+    this.#ctx.error("> ppx-install: " + message);
   }
 
   fatal(message: string): never {
@@ -66,7 +66,7 @@ export class Platform {
         unlinkSync(file);
       }
     }
-    this.#ctx.error(message, { exit: 1 });
+    this.#ctx.error("> ppx-install: " + message, { exit: 1 });
   }
 
   elevated() {
@@ -101,7 +101,7 @@ export class Platform {
   }
 
   exec(command: string) {
-    this.#log(`> ${command}`);
+    this.log(`> ${command}`);
     execSync(command, this.#execOptions);
   }
 

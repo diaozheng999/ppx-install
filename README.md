@@ -1,4 +1,4 @@
-@nasi/ppx-install
+ppx-install
 =================
 
 Install Esy/OPAM repositories into ReScript
@@ -15,7 +15,7 @@ Install Esy/OPAM repositories into ReScript
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @nasi/ppx-install
+$ npm install -g ppx-install
 $ ppx-install COMMAND
 running command...
 $ ppx-install (-v|--version|version)
