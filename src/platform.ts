@@ -7,6 +7,7 @@ import { removeIfExistsSync } from "./utils";
 interface RunOptions {
   shouldElevateInWindows?: boolean;
   arg1?: string;
+  silent?: boolean;
 }
 
 export class Platform {
@@ -18,6 +19,8 @@ export class Platform {
   #execOptions: ExecSyncOptions;
 
   #ctx: Command;
+
+  #silent = false;
 
   cleanup: string[] = [];
 
@@ -54,7 +57,9 @@ export class Platform {
   }
 
   log(message: string) {
-    this.#log("> ppx-install " + message);
+    if (!this.#silent) {
+      this.#log("> ppx-install " + message);
+    }
   }
 
   error(message: string) {
@@ -81,6 +86,10 @@ export class Platform {
   async run(options?: RunOptions) {
     if (!options?.shouldElevateInWindows) {
       return this.main();
+    }
+
+    if (options?.silent) {
+      this.#silent = true;
     }
 
     if (this.#platform === "win32" && !this.#elevated) {

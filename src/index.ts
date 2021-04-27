@@ -40,7 +40,7 @@ class PpxInstall extends Command {
         flags.elevated,
         args.input,
         args.output,
-      ).run();
+      ).run({ silent: true });
     }
   }
 }
