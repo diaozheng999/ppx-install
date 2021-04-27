@@ -1,7 +1,8 @@
 import Command from "@oclif/command";
 import { execSync, ExecSyncOptions } from "child_process";
-import { existsSync, unlinkSync } from "fs";
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 import { resolve } from "path";
+import { removeIfExistsSync } from "./utils";
 
 interface RunOptions {
   shouldElevateInWindows?: boolean;
@@ -62,9 +63,13 @@ export class Platform {
 
   fatal(message: string): never {
     for (const file of this.cleanup) {
-      if (existsSync(file)) {
-        unlinkSync(file);
-      }
+      removeIfExistsSync(file);
+    }
+    if (this.#elevated) {
+      writeFileSync(
+        resolve(this.#cwd, "__ppx_elevated_prompt_error"),
+        "> ppx-install: " + message,
+      );
     }
     this.#ctx.error("> ppx-install: " + message, { exit: 1 });
   }
@@ -84,18 +89,36 @@ export class Platform {
           options?.arg1 ?? ""
         }" "${this.#cwd}"`,
       );
+
+      const erf = resolve(this.#cwd, "__ppx_elevated_prompt_error");
+
+      if (existsSync(erf)) {
+        const error = readFileSync(erf);
+        unlinkSync(erf);
+        this.fatal(error.toString());
+      }
+
       return;
     }
 
     if (this.#platform === "win32") {
       this.log(`cwd: ${this.#cwd}`);
       process.chdir(resolve(this.#cwd));
+      process.on("unhandledRejection", (reason) => {
+        writeFileSync(
+          resolve(this.#cwd, "__ppx_elevated_prompt_error"),
+          reason,
+        );
+      });
+      process.on("uncaughtException", (error) => {
+        writeFileSync(resolve(this.#cwd, "__ppx_elevated_prompt_error"), error);
+      });
     }
     try {
       await this.main();
     } finally {
       if (this.#platform === "win32") {
-        unlinkSync("__ppx_elevated_prompt.lock");
+        unlinkSync(resolve(this.#cwd, "__ppx_elevated_prompt.lock"));
       }
     }
   }

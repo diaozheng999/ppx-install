@@ -34,7 +34,7 @@ export class PpxBuilderSingleton extends Platform {
       try {
         await this.spawn(EsyInstall).run({
           shouldElevateInWindows: true,
-          arg1: "--install",
+          arg1: "--build",
         });
       } finally {
         if (existsSync(this.#buildLockFile)) {

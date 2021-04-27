@@ -10,10 +10,7 @@ const copyFile = promisify(copyFile_);
 
 export class EsyInstall extends Platform {
   async main() {
-    this.log("hello world");
-    console.log("hello world");
     const specs = parse(this);
-    this.log("specs: " + JSON.stringify(specs));
     const ppxName = await generateProject(this, specs.name, specs.packages);
     this.dir(resolve(this.cwd(), "_ppx"), async () => {
       this.log("PPX project name: " + ppxName);

@@ -3,6 +3,9 @@ import { resolve } from "path";
 import { promisify } from "util";
 import { Platform } from "./platform";
 import { Package } from "./spec";
+import { removeAllIfExists, removeIfExistsSync } from "./utils";
+
+const rimraf = promisify(require("rimraf"));
 
 const writeFile = promisify(writeFile_);
 
@@ -38,6 +41,35 @@ export function buildDuneFile(name: string, packages: string[]) {
     (preprocess no_preprocessing))`;
 }
 
+function mkdirIfNotExistSync(dir: string) {
+  if (!existsSync(dir)) {
+    mkdirSync(dir);
+  }
+}
+
+export async function reconcileProject(
+  ctx: Platform,
+  projDir: string,
+  projSrcDir: string,
+) {
+  if (existsSync(projDir)) {
+    ctx.log("| project already exists.");
+    removeAllIfExists(
+      projDir,
+      (name) =>
+        !!/^_ppx_\w+\.exe$/.exec(name) ||
+        name.endsWith(".opam") ||
+        name.endsWith(".install"),
+    );
+    removeIfExistsSync(resolve(projSrcDir, "dune"));
+    await rimraf(resolve(projDir, "build"));
+  } else {
+    ctx.log("| creating project directory.");
+  }
+  mkdirIfNotExistSync(projDir);
+  mkdirIfNotExistSync(projSrcDir);
+}
+
 export async function generateProject(
   ctx: Platform,
   name: string,
@@ -47,15 +79,9 @@ export async function generateProject(
   const projDir = resolve(ctx.cwd(), "_ppx");
   const projSrcDir = resolve(projDir, "src");
 
-  if (existsSync(projDir)) {
-    ctx.log("project exists.");
-    return ppxName;
-  }
+  await reconcileProject(ctx, projDir, projSrcDir);
 
-  ctx.log("creating project directory");
-  mkdirSync(projDir);
-  mkdirSync(projSrcDir);
-  ctx.log("generating project");
+  ctx.log("| generating project files.");
   await Promise.all([
     writeFile(
       resolve(projDir, "package.json"),
@@ -78,6 +104,6 @@ export async function writeDuneFile(
   name: string,
   packages: string[],
 ) {
-  ctx.log("writing dune file");
+  ctx.log("| writing dune file.");
   return writeFile(resolve("src", "dune"), buildDuneFile(name, packages));
 }

@@ -1,8 +1,13 @@
 Dim fso
 Dim CurrentDirectory
 
+Dim Lockfile
+Lockfile = WScript.Arguments.Item(2) & "\__ppx_elevated_prompt.lock"
+
+WScript.Echo "WScript Lockfile location: " & Lockfile
+
 Set fso = CreateObject("Scripting.FileSystemObject")
-fso.CreateTextFile "__ppx_elevated_prompt.lock", True
+fso.CreateTextFile Lockfile, True
 
 CreateObject("Shell.Application").ShellExecute _
   "cmd", _
@@ -11,6 +16,6 @@ CreateObject("Shell.Application").ShellExecute _
   "runas", _
   1
 
-Do Until NOT fso.FileExists("__ppx_elevated_prompt.lock")
+Do Until NOT fso.FileExists(Lockfile)
   WScript.Sleep 400
 Loop
