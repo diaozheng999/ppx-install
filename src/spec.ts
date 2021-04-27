@@ -21,6 +21,8 @@ type PackageSpecParsed = [string, PackageSpec[]];
 
 function parsePpxJson(ctx: Platform, path: string) {
   const ppxJson = require(path);
+  ctx.log(`using ppx.json at: ${path}`);
+
   const keys = Object.keys(ppxJson);
   if (keys.length !== 1) {
     ctx.fatal("Unknown configuration.");
@@ -29,8 +31,9 @@ function parsePpxJson(ctx: Platform, path: string) {
 }
 
 function parsePackageJson(ctx: Platform) {
-  const packageJson = require(resolve(ctx.cwd(), "package.json"));
-  ctx.log(`using package.json at: ${packageJson}`);
+  const packageJsonLocation = resolve(ctx.cwd(), "package.json");
+  const packageJson = require(packageJsonLocation);
+  ctx.log(`using package.json at: ${packageJsonLocation}`);
 
   const ppx = packageJson.ppx;
   return [packageJson.name, ppx] as PackageSpecParsed;

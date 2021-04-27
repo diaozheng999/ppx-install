@@ -1,12 +1,9 @@
-import { copyFile as copyFile_ } from "fs";
+import { copyFileSync } from "fs";
 import { resolve } from "path";
-import { promisify } from "util";
 import { getPackageNames } from "./esy-internals";
 import { Platform } from "./platform";
 import { generateProject, writeDuneFile } from "./ppx-builder";
 import { parse } from "./spec";
-
-const copyFile = promisify(copyFile_);
 
 export class EsyInstall extends Platform {
   async main() {
@@ -19,7 +16,8 @@ export class EsyInstall extends Platform {
       await writeDuneFile(this, ppxName, packageNames);
       this.exec("npx esy build");
       this.exec("npx esy dune install --prefix build");
-      await copyFile(
+      this.log(": copying ppx.exe");
+      copyFileSync(
         resolve(this.cwd(), "_ppx", "build", "lib", ppxName, "ppx.exe"),
         resolve(this.cwd(), "_ppx", `_ppx_${specs.hash}.exe`),
       );

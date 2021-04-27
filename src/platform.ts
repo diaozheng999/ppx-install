@@ -16,7 +16,7 @@ export class Platform {
   #cwd: string;
 
   #log: (message: string) => void;
-  #execOptions: ExecSyncOptions;
+  #execOptions: ExecSyncOptions = { stdio: "inherit" };
 
   #ctx: Command;
 
@@ -28,11 +28,9 @@ export class Platform {
     if (this.#platform === "win32" && elevated) {
       this.#elevated = true;
       this.#cwd = elevated;
-      this.#execOptions = { stdio: "inherit" };
       this.#log = console.log;
     } else {
       this.#cwd = process.cwd();
-      this.#execOptions = { stdio: [0, 2, 2] };
       this.#log = console.error;
     }
 
