@@ -82,12 +82,12 @@ export class Platform {
   }
 
   async run(options?: RunOptions) {
-    if (!options?.shouldElevateInWindows) {
-      return this.main();
-    }
-
     if (options?.silent) {
       this.#silent = true;
+    }
+
+    if (!options?.shouldElevateInWindows) {
+      return this.main();
     }
 
     if (this.#platform === "win32" && !this.#elevated) {
