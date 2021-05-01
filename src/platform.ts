@@ -60,6 +60,12 @@ export class Platform {
     }
   }
 
+  logv(verbose: boolean, message: string) {
+    if (verbose) {
+      this.log(message);
+    }
+  }
+
   error(message: string) {
     this.#ctx.error("> ppx-install: " + message);
   }
@@ -152,5 +158,9 @@ export class Platform {
       process.chdir(cwd);
       this.log(`] Platform.dir: cwd: ${process.cwd()}`);
     }
+  }
+
+  resolve(...segs: string[]) {
+    return resolve(this.#cwd, ...segs);
   }
 }

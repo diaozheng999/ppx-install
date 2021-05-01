@@ -13,48 +13,57 @@ export interface Result {
   name: string;
   packages: Package[];
   hash: string;
+  hasPpxJson: boolean;
 }
 
 type PackageSpec = string | [string, string];
 
 type PackageSpecParsed = [string, PackageSpec[]];
 
-function parsePpxJson(ctx: Platform, path: string) {
+function parsePpxJson(ctx: Platform, path: string, verbose: boolean) {
   const ppxJson = require(path);
-  ctx.log(`using ppx.json at: ${path}`);
+  ctx.logv(verbose, `using ppx.json at: ${path}`);
 
   const keys = Object.keys(ppxJson);
   if (keys.length !== 1) {
-    ctx.fatal("Unknown configuration.");
+    return;
   }
   return [keys[0], ppxJson[keys[0]]] as PackageSpecParsed;
 }
 
-function parsePackageJson(ctx: Platform) {
-  const packageJsonLocation = resolve(ctx.cwd(), "package.json");
+function parsePackageJson(ctx: Platform, cwd: string, verbose: boolean) {
+  const packageJsonLocation = resolve(cwd, "package.json");
   const packageJson = require(packageJsonLocation);
-  ctx.log(`using package.json at: ${packageJsonLocation}`);
+  ctx.logv(verbose, `using package.json at: ${packageJsonLocation}`);
 
   const ppx = packageJson.ppx;
   return [packageJson.name, ppx] as PackageSpecParsed;
 }
 
-export function parse(ctx: Platform) {
-  const ppxJson = resolve(ctx.cwd(), `ppx.json`);
+export function parse(ctx: Platform, path?: string, verbose = true) {
+  const cwd = path ?? ctx.cwd();
+  const ppxJson = resolve(cwd, `ppx.json`);
 
   let res: PackageSpecParsed;
 
+  let hasPpxJson = false;
+
   if (existsSync(ppxJson)) {
-    res = parsePpxJson(ctx, ppxJson);
+    const _res = parsePpxJson(ctx, ppxJson, verbose);
+    if (!_res) {
+      return;
+    }
+    res = _res;
+    hasPpxJson = true;
   } else {
-    res = parsePackageJson(ctx);
+    res = parsePackageJson(ctx, cwd, verbose);
   }
 
   const [name, ppx] = res;
   const packages: Package[] = [];
 
   if (typeof ppx !== "object") {
-    ctx.fatal("Cannot understand the list of PPXes.");
+    return;
   }
 
   for (const item of ppx) {
@@ -69,8 +78,9 @@ export function parse(ctx: Platform) {
     name,
     packages,
     hash: md5(JSON.stringify([name, packages])),
+    hasPpxJson,
   };
-  ctx.log(`hash: ${ret.hash}`);
+  ctx.logv(verbose, `hash: ${ret.hash}`);
 
   return ret;
 }

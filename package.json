@@ -1,25 +1,28 @@
 {
   "name": "ppx-install",
   "description": "Install Esy/OPAM repositories into ReScript",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Diao Zheng",
   "bin": {
     "ppx-install": "./bin/run"
   },
   "bugs": "https://github.com/diaozheng999/ppx-install/issues",
   "dependencies": {
+    "@nasi/boost": "0.1.0-unstable.3",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
     "esy": "^0.6.10",
     "md5": "^2.3.0",
-    "tslib": "^2.2.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "semver": "^7.3.5",
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
     "@types/md5": "^2.3.0",
     "@types/node": "^10.17.58",
+    "@types/semver": "^7.3.5",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
     "copyfiles": "^2.4.1",

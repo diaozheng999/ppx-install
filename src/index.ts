@@ -23,6 +23,7 @@ class PpxInstall extends Command {
       char: "c",
       description: "removes _ppx directory",
     }),
+    dep: flags.string({}),
   };
 
   static args = [{ name: "input" }, { name: "output" }];
@@ -40,6 +41,7 @@ class PpxInstall extends Command {
         flags.elevated,
         args.input,
         args.output,
+        flags.dep,
       ).run({ silent: true });
     }
   }

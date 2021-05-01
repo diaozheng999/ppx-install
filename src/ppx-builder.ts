@@ -1,16 +1,26 @@
-import { existsSync, mkdirSync, writeFile as writeFile_ } from "fs";
+import {
+  existsSync,
+  mkdirSync,
+  writeFile as writeFile_,
+  writeFileSync,
+} from "fs";
 import { resolve } from "path";
 import { promisify } from "util";
 import { Platform } from "./platform";
 import { Package } from "./spec";
 import { removeAllIfExists, removeIfExistsSync } from "./utils";
 
-const rimraf = promisify(require("rimraf"));
-
 const writeFile = promisify(writeFile_);
 
-export function clobberName(name: string) {
-  return `ppx_${name.replace(/\W/g, "_")}`;
+export function clobberName(name: string, appendPpx = false) {
+  const clobbered = name
+    .replace(/\@/g, "scope_")
+    .replace(/\W/g, "_")
+    .replace(/^_/, "");
+  if (appendPpx) {
+    return `ppx_${clobbered}`;
+  }
+  return clobbered;
 }
 
 export function buildPackageJson(name: string, deps: Package[]) {
@@ -23,19 +33,27 @@ export function buildPackageJson(name: string, deps: Package[]) {
     dependencies[name] = version;
   }
 
-  return JSON.stringify({
-    name,
-    dependencies,
-    esy: {
-      build: "dune build -p #{self.name}",
+  return JSON.stringify(
+    {
+      name,
+      esy: {
+        build: "dune build -p #{self.name}",
+      },
+      dependencies,
     },
-  });
+    undefined,
+    2,
+  );
 }
 
-export function buildDuneFile(name: string, packages: string[]) {
+export function buildDuneFile(
+  name: string,
+  packages: string[],
+  publicName: string,
+) {
   return `(library
     (name ${name})
-    (public_name ${name})
+    (public_name ${publicName})
     (kind ppx_rewriter)
     (libraries ${packages.join(" ")})
     (preprocess no_preprocessing))`;
@@ -54,15 +72,16 @@ export async function reconcileProject(
 ) {
   if (existsSync(projDir)) {
     ctx.log("| project already exists.");
-    removeAllIfExists(
+    await removeAllIfExists(
       projDir,
       (name) =>
         !!/^_ppx_\w+\.exe$/.exec(name) ||
         name.endsWith(".opam") ||
-        name.endsWith(".install"),
+        name.endsWith(".install") ||
+        name === "build" ||
+        name.startsWith("dep"),
     );
     removeIfExistsSync(resolve(projSrcDir, "dune"));
-    await rimraf(resolve(projDir, "build"));
   } else {
     ctx.log("| creating project directory.");
   }
@@ -74,8 +93,9 @@ export async function generateProject(
   ctx: Platform,
   name: string,
   deps: Package[],
+  appendPpx: boolean,
 ) {
-  const ppxName = clobberName(name);
+  const ppxName = clobberName(name, appendPpx);
   const projDir = resolve(ctx.cwd(), "_ppx");
   const projSrcDir = resolve(projDir, "src");
 
@@ -96,6 +116,44 @@ export async function generateProject(
   return ppxName;
 }
 
+const fixPpxFlags = (dep: string) => (item: string | string[]) => {
+  if (typeof item === "string") {
+    if (item.startsWith("ppx-install")) {
+      return [item, `--dep=${dep}`];
+    }
+    return item;
+  }
+  if (item[0].startsWith("ppx-install")) {
+    const len = item.length;
+    for (let i = 1; i < len; ++i) {
+      if (item[i].startsWith("--dep")) {
+        item[i] = `--dep=${dep}`;
+      }
+      return item;
+    }
+  }
+  return item;
+};
+
+export function changeBsConfig(ctx: Platform, dep: string, path: string) {
+  const bsconfigPath = resolve(path, "bsconfig.json");
+  const bsconfig = require(bsconfigPath);
+  const ndep = `${dep}#"${ctx.cwd()}"`;
+
+  if (
+    bsconfig.__ppx_install_injected &&
+    bsconfig.__ppx_install_injected === ndep
+  ) {
+    ctx.log(`: ${ndep} already updated.`);
+    return;
+  }
+
+  bsconfig.__ppx_install_injected = ndep;
+  bsconfig["ppx-flags"] = bsconfig["ppx-flags"].map(fixPpxFlags(ndep));
+  ctx.log(`: ${ndep} updating ${bsconfigPath}`);
+  writeFileSync(bsconfigPath, JSON.stringify(bsconfig, undefined, 2));
+}
+
 /**
  * Assumes you're already in the project directory
  */
@@ -103,7 +161,14 @@ export async function writeDuneFile(
   ctx: Platform,
   name: string,
   packages: string[],
+  dep?: string,
 ) {
-  ctx.log("| writing dune file.");
-  return writeFile(resolve("src", "dune"), buildDuneFile(name, packages));
+  const path = dep ?? "src";
+  const publicName = dep ? `${name}.${dep}` : name;
+  mkdirIfNotExistSync(path);
+  ctx.log(dep ? `| writing dune file for ${dep}` : "| writing dune file.");
+  return writeFile(
+    resolve(path, "dune"),
+    buildDuneFile(dep ?? name, packages, publicName),
+  );
 }

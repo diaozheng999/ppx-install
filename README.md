@@ -40,10 +40,14 @@ npm install --save-dev ppx-install
 }
 ```
 
-**Step 3 (OPTIONAL)**: Pre-build the PPX rewriters by executing:
+**Step 3**: Pre-build the PPX rewriters by executing:
 ```sh
 npx ppx-install --build
 ```
+
+As of `0.3.0` this is no longer optional, since `ppx-install` now looks at the
+entire dependency tree and rewrites dependencies which in turn relies on
+`ppx-install`.
 
 **Step 4**: Ignore the generated `_ppx` directory in `.gitignore`
 
