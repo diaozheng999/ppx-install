@@ -1,0 +1,18 @@
+{
+  "name": "ppx-install",
+  "version": "0.3.0",
+  "dependencies": {
+    "ocaml": "4.12.x",
+    "@opam/dune": "~2.8.4",
+    "@opam/dune-action-plugin": "*",
+    "@opam/ppx_yojson_conv": "*",
+    "@opam/yojson": "*"
+  },
+  "devDependencies": {
+    "@opam/ocaml-lsp-server": "1.6.1",
+    "@opam/ocamlformat": "*"
+  },
+  "resolutions": {
+    "@opam/ocaml-lsp-server": "github:diaozheng999/ocaml-lsp:ocaml-lsp-server.opam#c426212076cbbdc584b8c8a93e951e639c067547"
+  }
+}
